@@ -34,10 +34,11 @@ class TestReceive(unittest.TestCase):
     @mock.patch('async_receive.trigger_event',
                 new=AsyncMock(return_value='my response'))
     def test_message(self):
-        _run(receive('MESSAGE', 'data'))
-        from async_receive import send_to_client, trigger_event
-        trigger_event.mock.assert_called_once_with('message', 'data')
-        send_to_client.mock.assert_called_once_with('MESSAGE', 'my response')
+        with mock.patch('async_receive.send_to_client', new=AsyncMock()) as send_to_client:
+            with mock.patch('async_receive.trigger_event', new=AsyncMock(return_value='my response')) as trigger_event:
+                _run(receive('MESSAGE', 'data'))
+                trigger_event.mock.assert_called_once_with('message', 'data')
+                send_to_client.mock.assert_called_once_with('MESSAGE', 'my response')
 
 
 if __name__ == '__main__':
